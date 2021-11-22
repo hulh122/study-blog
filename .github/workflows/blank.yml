@@ -1,36 +1,33 @@
-# This is a basic workflow to help you get started with Actions
+### CI 脚本名
+name: Build and Deploy
 
-name: CI
-
-# Controls when the workflow will run
+### 触发 CI 脚本的前提，标注只在 master 分支 Push 时触发 CI 脚本
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
-  # Allows you to run this workflow manually from the Actions tab
+  ### 允许在 actions 中跑 workflow 的流程
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+### CI 执行的 Jobs
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  build-and-deploy:
+    ### 执行环境
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      ### 检出 ${GITHUB_WORKSPACE}
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2.3.1
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      ### 依赖安装和打包阶段，Actions 中的打包机没有全局安装 yarn，故这里使用 npm
+      - name: Install and Build 🔧
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          npm install
+          npm run build
+
+      ### Deploy 阶段，使用该 actions 将静态文件推送至 gh-pages 分支
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.6
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: ./docs/.vuepress/dist
